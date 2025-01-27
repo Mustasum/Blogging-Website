@@ -1,0 +1,72 @@
+name: PR Validation
+
+# This workflow will run on pull request events targeting the 'develop' branch
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  # Job 1: Linting job
+  linting:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Check out the code to the runner
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Set up Node.js for installing dependencies
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'  # Specify the version of Node.js you'd like to use
+
+    # Install HTMLHint and Stylelint dependencies
+    - name: Install dependencies
+      run: |
+        npm install htmlhint stylelint
+
+    # Lint HTML files
+    - name: Lint HTML files
+      run: htmlhint '**/*.html'
+
+    # Lint CSS files
+    - name: Lint CSS files
+      run: stylelint '**/*.css'
+
+  # Job 2: Build Job
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Check out the code to the runner
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Set up Node.js to run the build
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'  # Specify the version of Node.js you'd like to use
+
+    # Install dependencies (including Parcel)
+    - name: Install dependencies
+      run: npm install
+
+    # Install Parcel (if it's not already installed as part of dependencies)
+    - name: Install Parcel
+      run: npm install --save-dev parcel
+
+    # Build the static website with Parcel (just to ensure the code compiles)
+    - name: Build website
+      run: npm run build
+
+    # Ensure that the build completes successfully without deploying anywhere
+    - name: Verify Build Output
+      run: |
+        if [ ! -d "dist" ]; then
+          echo "Build directory not found!"
+          exit 1
+        fi
+        echo "Build directory exists. Build completed successfully."
