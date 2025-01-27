@@ -1,0 +1,49 @@
+name: Deploy Development
+
+# This workflow will trigger on any push to the develop branch
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  # Job 1: Build the Static Website
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Check out the code
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Step 2: Set up Node.js (using a specific version)
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    # Step 3: Install dependencies from package.json
+    - name: Install dependencies
+      run: npm install
+
+    # Step 4: Install Parcel if not already included
+    - name: Install Parcel
+      run: npm install --save-dev parcel
+
+    # Step 5: Build the static website with Parcel
+    - name: Build website
+      run: npm run build
+
+    # Step 6: Upload build artifact (static files) for deployment
+    - name: Upload Pages Artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: dist  # Path where Parcel outputs the build files (adjust if necessary)
+
+  # Job 2: Deploy to GitHub Pages
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build  # Ensures the build job runs before this job
+
+    steps:
+    # Step 1
